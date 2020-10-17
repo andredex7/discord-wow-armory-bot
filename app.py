@@ -22,6 +22,7 @@ async def on_message(message):
         return
 
     if message.content.startswith("!armory token"):
+        print("a")
         split = split_query(message.content, "wow_token")
         region = split[0]
         info = await wow_token_price(region)
@@ -29,22 +30,23 @@ async def on_message(message):
         # Returns a message to the channel if there's an error fetching.
         if info == "not_found":
             msg = GOLD_ERROR.format(message)
-            await channel.send(msg)
+            await message.channel.send(msg)
 
         elif info == "connection_error":
             msg = CONNECTION_ERROR.format(message)
-            await channel.send(msg)
+            await message.channel.send(msg)
 
         elif info == "credential_error":
             msg = CREDENTIAL_ERROR.format(message)
-            await channel.send(msg)
+            await message.channel.send(msg)
 
         else:
+            print("b")
             msg = (
                 "`The current price of a WoW Token on %s realms is %s gold.` :moneybag:"
                 % (region, info)
             )
-            await channel.send(msg)
+            await message.channel.send(msg)
 
     if message.content.startswith("!armory pve"):
         split = split_query(message.content, "pve")
