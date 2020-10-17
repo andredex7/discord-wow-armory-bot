@@ -12,31 +12,30 @@ async def get_data(region, access_token, **kwargs):
         return access_token
 
     else:
-        print("debug: access_token ok")
         if region == "cn":
             base_api_path = "https://gateway.battlenet.com.cn"
         else:
             base_api_path = "https://%s.api.blizzard.com" % (region)
 
         try:
-            print("debug: opening connection")
             async with aiohttp.ClientSession() as client:
-                print("debug: connection open")
                 # Fires off a different API call depending on the type of requested content.
                 if kwargs.get("field") == "wow_token":
                     api_path = (
-                        "%s/data/wow/token/?namespace=dynamic-%s&access_token=%s"
-                        % (base_api_path, region, access_token)
+                        "%s/data/wow/token/index?namespace=dynamic-%s&locale=%s&access_token=%s"
+                        % (base_api_path, region, LOCALE, access_token)
                     )
 
                 else:
+                    # https://us.api.blizzard.com/profile/wow/character/tichondrius/charactername/equipment?namespace=profile-us&locale=en_US&access_token=US6Lvisr4LMCjt3Rz6zRN4Ya8YH3a0GUUv
                     api_path = (
-                        "%s/wow/character/%s/%s?fields=%s&locale=%s&access_token=%s"
+                        "%s/profile/wow/character/%s/%s/%s?namespace=profile-%s&locale=%s&access_token=%s"
                         % (
                             base_api_path,
                             kwargs.get("realm"),
                             kwargs.get("name"),
                             kwargs.get("field"),
+                            region,
                             LOCALE,
                             access_token,
                         )
@@ -84,6 +83,7 @@ async def get_access_token(region):
             ) as auth_response:
                 assert auth_response.status == 200
                 auth_json = await auth_response.json()
+                print(auth_json["access_token"])
                 return auth_json["access_token"]
 
     except Exception as error:
@@ -418,7 +418,7 @@ async def character_info(name, realm, query, region):
     print("a")
     # Grabs overall character data including their ilvl.
     access_token = await get_access_token(region)
-    info = await get_data(region, access_token, name=name, realm=realm, field="items")
+    info = await get_data(region, access_token, name=name, realm=realm, field="equipment")
 
     if info == "not_found" or info == "connection_error" or info == "credential_error":
         return info
