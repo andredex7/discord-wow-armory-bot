@@ -12,13 +12,16 @@ async def get_data(region, access_token, **kwargs):
         return access_token
 
     else:
+        print("debug: access_token ok")
         if region == "cn":
             base_api_path = "https://gateway.battlenet.com.cn"
         else:
             base_api_path = "https://%s.api.blizzard.com" % (region)
 
         try:
+            print("debug: opening connection")
             async with aiohttp.ClientSession() as client:
+                print("debug: connection open")
                 # Fires off a different API call depending on the type of requested content.
                 if kwargs.get("field") == "wow_token":
                     api_path = (
@@ -57,6 +60,8 @@ async def get_data(region, access_token, **kwargs):
                             return "not_found"
 
                     else:
+                        print("error: "+str(api_response.status))
+                        print(api_response.json())
                         raise
 
         except Exception as error:
@@ -410,6 +415,7 @@ async def character_info(name, realm, query, region):
     Builds a character sheet out of their name, realm,
     armory link, player thumbnail, ilvl, achievement and raid progress and more."""
 
+    print("a")
     # Grabs overall character data including their ilvl.
     access_token = await get_access_token(region)
     info = await get_data(region, access_token, name=name, realm=realm, field="items")
